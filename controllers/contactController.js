@@ -5,13 +5,16 @@ const Contact = require("../models/contactModel");
 
 const getAllContacts = asyncHandler(async (req, res) => {
     const contacts = await Contact.find();
-    const users = [
-        { name: "John", email: "john@aaa.bbb", phone: "123456789" },
-        { name: "Jane", email: "jane@aaa.bbb", phone: "67891234" },
-    ];
-    res.render("getAll", { heading: "User List", users: users }); // views 폴더에 있는 getAll.ejs 파일 렌더링하기
+    res.render("index-2", { contacts: contacts });
 });
 
+// @desc View add contact form
+// @route GET /contacts/add
+const addContactForm = (req, res) => {
+    res.render("add"); // views/add.ejs 렌더링하기
+};
+// @desc Create a contact
+// @route POST /contacts/add
 const createContact = asyncHandler(async (req, res) => {
     console.log(req.body);
     const { name, email, phone } = req.body;
@@ -23,15 +26,14 @@ const createContact = asyncHandler(async (req, res) => {
         email,
         phone,
     });
-    res.status(201).send("Create contacts");
+    res.redirect("/contacts");
 });
-
 
 
 const getContact = asyncHandler(async (req, res) => {
     const name = req.params.id;
-    const contact = await Contact.findOne({ name: name });
-    res.status(200).send(contact);
+    const contact = await Contact.findById(req.params.id);
+    res.render("update", { contact: contact });
 });
 
 const updateContact = asyncHandler(async (req, res) => {
@@ -42,17 +44,13 @@ const updateContact = asyncHandler(async (req, res) => {
         { name, email, phone },
         { new: true }
     );
-    res.status(200).send(updatedContact);
+    res.redirect("/contacts");
 });
 
 const deleteContact = asyncHandler(async (req, res) => {
     const contact = await Contact.findById(req.params.id);
-    if(!contact){
-        res.status(404);
-        throw new Error("Contact not found");
-    }
-    await Contact.deleteOne();
-    res.status(200).send(`Delete Contact for ID: ${req.params.id}`);
+    await Contact.findByIdAndDelete(req.params.id);
+    res.redirect("/contacts");
 });
 
 
@@ -62,4 +60,5 @@ module.exports = {
     getContact,
     updateContact,
     deleteContact,
+    addContactForm,
 };
